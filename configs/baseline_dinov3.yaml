@@ -1,0 +1,36 @@
+# Baseline (faithful PatchCore) + DINOv3 ConvNeXt-Base
+# KolektorSDD, single split: train = 50 good images, test = 52 defective + 297 good.
+# Reproduces: image_AUROC=0.9507 image_AUPR=0.8274 F1=0.7292 pixel_AUROC=0.9887 pixel_AUPR=0.2232
+
+seed: 42
+device: cuda  # or cpu
+
+data:
+  root: /content/drive/MyDrive/KolektorSDD  # local path to KolektorSDD (kos01..kos50)
+  width: 512
+  height: 1408
+  train_good: 50
+
+backbone:
+  name: convnext_base.dinov3_lvd1689m  # timm id, DINOv3-pretrained ConvNeXt-Base (LVD-1689M)
+  out_indices: [1, 2]                  # stages.1 (256ch, /8) + stages.2 (512ch, /16)
+  pretrained: true
+
+features:
+  pool: 3            # 3x3 avg-pool neighbourhood aggregation (PatchCore p=3, s=1)
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+
+coreset:
+  size: 10000        # ~PatchCore-1.8%
+  proj_dim: 128      # JL random projection (official default)
+  batch_add: 128     # batched greedy (exact greedy adds 1/iter; batched is equivalent in practice)
+
+scoring:
+  neighbors: 9       # Eq.7 reweighting neighbourhood size
+  gauss_kernel: 17
+  gauss_sigma: 4.0   # PatchCore segmentation smoothing
+
+metrics:
+  pixel_width: 128
+  pixel_height: 352
