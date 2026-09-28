@@ -55,3 +55,41 @@ def fixed_split(items, n_train_good=50, seed=42):
     test = defects + goods[n_train_good:]
     rng.shuffle(test)
     return train, test
+
+
+class KolektorDataset:
+    """PyTorch Dataset for loading KolektorSDD images without annotations.
+
+    Strictly used for normal training images:
+    - Never touches ground-truth defect masks or labels.
+    - Yields original normalized tensor and optionally augmented tensor.
+    """
+
+    def __init__(self, root, file_list, transform=None, aug_transform=None):
+        self.root = root
+        self.files = list(file_list)
+        self.transform = transform
+        self.aug_transform = aug_transform
+
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self, idx):
+        rel_path = self.files[idx]
+        full_path = os.path.join(self.root, rel_path)
+        img = Image.open(full_path).convert("RGB")
+
+        item = {
+            "rel_path": rel_path,
+        }
+
+        if self.transform is not None:
+            item["image"] = self.transform(img)
+        else:
+            item["image"] = img
+
+        if self.aug_transform is not None:
+            item["aug_image"] = self.aug_transform(img)
+
+        return item
+

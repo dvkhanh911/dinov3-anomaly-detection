@@ -27,11 +27,16 @@ class Dinov3Backbone(nn.Module):
     def out_channels(self):
         return sum(self.model.feature_info.channels())
 
-    @torch.no_grad()
-    def embed(self, x):
-        """x: (1,3,H,W) normalized tensor -> (C,h,w) patch embedding."""
+    def forward(self, x):
+        """x: (B,3,H,W) normalized tensor -> (B,C,h,w) spatial feature map."""
         f1, f2 = self.model(x)
         f1 = F.avg_pool2d(f1, self.pool, 1, 1)
         f2 = F.avg_pool2d(f2, self.pool, 1, 1)
         f2 = F.interpolate(f2, size=f1.shape[-2:], mode="bilinear", align_corners=False)
-        return torch.cat([f1, f2], dim=1).squeeze(0)
+        return torch.cat([f1, f2], dim=1)
+
+    @torch.no_grad()
+    def embed(self, x):
+        """x: (1,3,H,W) normalized tensor -> (C,h,w) patch embedding."""
+        return self.forward(x).squeeze(0)
+
