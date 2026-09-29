@@ -133,14 +133,14 @@ Bilinear Upsampling to Image Resolution [B, 1, H, W]
 
 ---
 
-## 7. Residual Fusion
+### 7. Residual Fusion
 
 To prevent overly aggressive suppression of true defects located near region boundaries, fusion adopts a residual formulation with baseline weight $\alpha \in [0, 1]$:
 
-$$\text{Refined\_Map} = \text{Anomaly\_Map} \times \left( \alpha + (1 - \alpha) \times \text{Seg\_Mask} \right)$$
+$$M_{\text{refined}} = M_{\text{anomaly}} \odot \left( \alpha + (1 - \alpha) \cdot M_{\text{seg}} \right)$$
 
-- When $\alpha = 1.0$: $\text{Refined\_Map} \equiv \text{Anomaly\_Map}$ (exact PatchCore baseline).
-- When $\alpha < 1.0$: Spurious background fixture anomalies are attenuated by factor $\alpha$ while true object anomalies are preserved.
+- **When $\alpha = 1.0$**: $M_{\text{refined}} \equiv M_{\text{anomaly}}$ (exact PatchCore baseline).
+- **When $\alpha < 1.0$**: Spurious background fixture anomalies are attenuated by factor $\alpha$, while true object anomalies are preserved.
 
 ---
 
